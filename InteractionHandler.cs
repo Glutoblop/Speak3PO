@@ -82,8 +82,11 @@ namespace Speak3Po
                 var voiceChannel = await db.GetAsync<VoiceChannelData>($"TempChannel/{oldState.VoiceChannel.Id}");
                 if (voiceChannel != null)
                 {
-                    await oldState.VoiceChannel.DeleteAsync();
-                    await db.DeleteAsync($"TempChannel/{oldState.VoiceChannel.Id}");
+                    if (oldState.VoiceChannel.ConnectedUsers.Count == 0)
+                    {
+                        await oldState.VoiceChannel.DeleteAsync();
+                        await db.DeleteAsync($"TempChannel/{oldState.VoiceChannel.Id}");
+                    }
                 }
             }
         }
