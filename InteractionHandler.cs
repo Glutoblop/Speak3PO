@@ -1,10 +1,10 @@
-﻿using System.Reflection;
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Speak3Po.Core.Interfaces;
 using Speak3Po.Data;
+using System.Reflection;
 
 namespace Speak3Po
 {
@@ -55,11 +55,34 @@ namespace Speak3Po
             var db = _services.GetRequiredService<IDatabase>();
             if (db == null) return;
 
-            if(oldState.VoiceChannel == null && newState.VoiceChannel != null)
+            if (newState.VoiceChannel != null)
             {
                 var voiceChannel = await db.GetAsync<VoiceChannelData>($"TriggerChannel/{newState.VoiceChannel.Id}");
-                if (voiceChannel == null) return;
+                if (voiceChannel != null)
+                {
 
+                    var tempChannel = await newState.VoiceChannel.Guild.CreateVoiceChannelAsync($"Temp Voice",
+                        properties => { properties.CategoryId = newState.VoiceChannel.CategoryId; });
+
+                    await db.PutAsync($"TempChannel/{tempChannel.Id}", new VoiceChannelData()
+                    {
+                        GuildId = tempChannel.GuildId,
+                        ChannelId = tempChannel.Id
+                    });
+
+                    await newState.VoiceChannel.Guild.MoveAsync((IGuildUser)user, tempChannel);
+
+                }
+            }
+
+            if (oldState.VoiceChannel != null)
+            {
+                var voiceChannel = await db.GetAsync<VoiceChannelData>($"TempChannel/{oldState.VoiceChannel.Id}");
+                if (voiceChannel != null)
+                {
+                    await oldState.VoiceChannel.DeleteAsync();
+                    await db.DeleteAsync($"TempChannel/{oldState.VoiceChannel.Id}");
+                }
             }
         }
 
