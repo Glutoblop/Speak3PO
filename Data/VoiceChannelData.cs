@@ -1,0 +1,8 @@
+﻿namespace Speak3Po.Data
+{
+    public class VoiceChannelData
+    {
+        public ulong GuildId { get; set; }
+        public ulong ChannelId { get; set; }
+    }
+}

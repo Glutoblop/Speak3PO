@@ -1,0 +1,13 @@
+name: speak3po
+
+services:
+
+  speak3po:
+    restart: always
+    build: .
+    volumes:
+      - cached_db:/app/Speak3POCache
+    
+
+volumes:
+  cached_db:
