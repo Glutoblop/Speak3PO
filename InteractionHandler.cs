@@ -60,9 +60,11 @@ namespace Speak3Po
                 var voiceChannel = await db.GetAsync<VoiceChannelData>($"TriggerChannel/{newState.VoiceChannel.Id}");
                 if (voiceChannel != null)
                 {
-
-                    var tempChannel = await newState.VoiceChannel.Guild.CreateVoiceChannelAsync($"Temp Voice",
-                        properties => { properties.CategoryId = newState.VoiceChannel.CategoryId; });
+                    var tempChannel = await newState.VoiceChannel.Guild.CreateVoiceChannelAsync(voiceChannel.TempChannelName,
+                        properties =>
+                        {
+                            properties.CategoryId = newState.VoiceChannel.CategoryId;
+                        });
 
                     await db.PutAsync($"TempChannel/{tempChannel.Id}", new VoiceChannelData()
                     {

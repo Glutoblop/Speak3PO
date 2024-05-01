@@ -18,7 +18,7 @@ namespace Speak3Po
         }
 
         [SlashCommand("assign", "The given Voice Channel Id is the generator of temporary voice channels", runMode: RunMode.Async)]
-        public async Task SetTriggerTime(IVoiceChannel voiceChannel)
+        public async Task SetTriggerTime(IVoiceChannel voiceChannel, string tempChannelName = "Temp Voice")
         {
             await DeferAsync(true);
 
@@ -33,10 +33,16 @@ namespace Speak3Po
                 });
             }
 
+            if (String.IsNullOrEmpty(tempChannelName))
+            {
+                tempChannelName = "Temp Voice";
+            }
+
             await db.PutAsync($"TriggerChannel/{voiceChannel.Id}", new VoiceChannelData()
             {
                 GuildId = Context.Guild.Id,
-                ChannelId = voiceChannel.Id
+                ChannelId = voiceChannel.Id,
+                TempChannelName = tempChannelName
             });
 
             await ModifyOriginalResponseAsync(properties =>

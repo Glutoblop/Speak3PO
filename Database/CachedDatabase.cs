@@ -44,7 +44,9 @@ namespace Speak3Po.Database
                     json = await File.ReadAllTextAsync(offlinePath);
                 }
 
-                return JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings
+                var offlineObj = JsonConvert.DeserializeObject<OfflineObject>(json);
+
+                return JsonConvert.DeserializeObject<T>(offlineObj.Json, new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore
                 });
