@@ -69,7 +69,8 @@ namespace Speak3Po
                     await db.PutAsync($"TempChannel/{tempChannel.Id}", new VoiceChannelData()
                     {
                         GuildId = tempChannel.GuildId,
-                        ChannelId = tempChannel.Id
+                        ChannelId = tempChannel.Id,
+                        OwnerClientId = user.Id
                     });
 
                     await newState.VoiceChannel.Guild.MoveAsync((IGuildUser)user, tempChannel);

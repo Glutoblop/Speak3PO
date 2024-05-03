@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 using Discord;
+using Discord.WebSocket;
 using Speak3Po.Core.Interfaces;
 using Speak3Po.Data;
 
@@ -32,6 +33,7 @@ namespace Speak3Po
                 {
                     properties.Content = $"Cannot assign the Master Voice Channel to a Temporary Voice Channel.";
                 });
+                return;
             }
 
             if (String.IsNullOrEmpty(tempChannelName))
@@ -49,6 +51,56 @@ namespace Speak3Po
             await ModifyOriginalResponseAsync(properties =>
             {
                 properties.Content = $"{voiceChannel.Mention} assigned as Master Channel.";
+            });
+        }
+
+        [EnabledInDm(false)]
+        [SlashCommand("max_people", "If you are the owner of the Temp Voice Channel set the max people allowed.",
+            runMode: RunMode.Async)]
+        public async Task SetMaxPeople(int maxPeople)
+        {
+            await DeferAsync(true);
+
+            if (maxPeople < 0)
+            {
+                await ModifyOriginalResponseAsync(properties =>
+                {
+                    properties.Content = $"Max People has to be more than 0";
+                });
+                return;
+            }
+
+            var db = _Services.GetRequiredService<IDatabase>();
+            SocketSlashCommand command = Context.Interaction as SocketSlashCommand;
+            var channel = command.Channel;
+            var tempChannel = await db.GetAsync<VoiceChannelData>($"TempChannel/{channel.Id}");
+            if (tempChannel == null)
+            {
+                await ModifyOriginalResponseAsync(properties =>
+                {
+                    properties.Content = $"This channel is not a Temp Voice Channel.";
+                });
+                return;
+            }
+
+            if (tempChannel.OwnerClientId != Context.Interaction.User.Id)
+            {
+                await ModifyOriginalResponseAsync(properties =>
+                {
+                    properties.Content = $"You are not the creator of this Temp Voice Channel.";
+                });
+                return;
+            }
+
+            var voiceChannel = channel as IVoiceChannel;
+            await voiceChannel.ModifyAsync(properties =>
+            {
+                properties.UserLimit = maxPeople;
+            });
+
+            await ModifyOriginalResponseAsync(properties =>
+            {
+                properties.Content = $"Max limit set to {maxPeople}";
             });
         }
     }
