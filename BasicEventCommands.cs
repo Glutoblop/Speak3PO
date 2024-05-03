@@ -7,7 +7,6 @@ using Speak3Po.Data;
 namespace Speak3Po
 {
     [RequireContext(ContextType.Guild)]
-    [RequireUserPermission(GuildPermission.Administrator)]
     public class BasicEventCommands : InteractionModuleBase<InteractionContext>
     {
         private readonly IServiceProvider _Services;
@@ -16,7 +15,9 @@ namespace Speak3Po
         {
             _Services = services;
         }
-
+        
+        [EnabledInDm(false)]
+        [DefaultMemberPermissions(GuildPermission.Administrator)]
         [SlashCommand("assign", "The given Voice Channel Id is the generator of temporary voice channels", runMode: RunMode.Async)]
         public async Task SetTriggerTime(IVoiceChannel voiceChannel, string tempChannelName = "Temp Voice")
         {
