@@ -64,7 +64,7 @@ namespace Speak3Po
                         properties =>
                         {
                             properties.CategoryId = newState.VoiceChannel.CategoryId;
-                            properties.PermissionOverwrites = newState.VoiceChannel.Category.PermissionOverwrites.ToList();
+                            properties.PermissionOverwrites = newState.VoiceChannel?.Category?.PermissionOverwrites.ToList();
                         });
 
                     await tempChannel.SyncPermissionsAsync();
