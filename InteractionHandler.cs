@@ -29,23 +29,7 @@ namespace Speak3Po
         {
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
             _client.InteractionCreated += HandleInteraction;
-            _client.ModalSubmitted += HandleModalSubmitted;
-            _client.ReactionAdded += HandleReactionAdded;
-            _client.ReactionRemoved += HandleReactionRemoved;
-            _client.SelectMenuExecuted += HandleMenuSelection;
-            _client.ButtonExecuted += HandleButtonPressed;
-
-            _client.MessageReceived += HandleMessageReceived;
-            _client.MessageUpdated += HandleMessageUpdated;
-            _client.MessageDeleted += HandleMessageDeleted;
-
-            _client.ChannelDestroyed += HandleChannelDestroyed;
             _client.UserVoiceStateUpdated += HandleVoiceChannelUpdated;
-        }
-
-        private async Task HandleMessageReceived(SocketMessage msg)
-        {
-            _Logger?.Log($"[HandleMessageReceived]", ELogType.Log);
         }
 
         private async Task HandleVoiceChannelUpdated(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
@@ -55,9 +39,11 @@ namespace Speak3Po
             var db = _services.GetRequiredService<IDatabase>();
             if (db == null) return;
 
+            //You just joined a voice chat
             if (newState.VoiceChannel != null)
             {
                 var voiceChannel = await db.GetAsync<VoiceChannelData>($"TriggerChannel/{newState.VoiceChannel.Id}");
+                //The voice chat you joined, is it a trigger channel?
                 if (voiceChannel != null)
                 {
                     var tempChannel = await newState.VoiceChannel.Guild.CreateVoiceChannelAsync(voiceChannel.TempChannelName,
@@ -76,11 +62,12 @@ namespace Speak3Po
                         OwnerClientId = user.Id
                     });
 
+                    await tempChannel.AddPermissionOverwriteAsync(user, OverwritePermissions.AllowAll(tempChannel).Modify(manageChannel: PermValue.Allow));
                     await newState.VoiceChannel.Guild.MoveAsync((IGuildUser)user, tempChannel);
-
                 }
             }
 
+            //You just left a voice chat
             if (oldState.VoiceChannel != null)
             {
                 var voiceChannel = await db.GetAsync<VoiceChannelData>($"TempChannel/{oldState.VoiceChannel.Id}");
@@ -95,52 +82,11 @@ namespace Speak3Po
             }
         }
 
-        private async Task HandleChannelDestroyed(SocketChannel socketChannel)
-        {
-            _Logger?.Log($"[HandleChannelDestroyed]", ELogType.Log);
-        }
-
-        private async Task HandleMessageUpdated(Cacheable<IMessage, ulong> msgCache, SocketMessage message, ISocketMessageChannel channel)
-        {
-            _Logger?.Log($"[HandleMessageUpdated] Message {msgCache.Id} updated: '{message.Content}' in channel: {channel.Id}", ELogType.VeryVerbose);
-        }
-
-        private async Task HandleMessageDeleted(Cacheable<IMessage, ulong> msgCache, Cacheable<IMessageChannel, ulong> channelCache)
-        {
-            _Logger?.Log($"[HandleMessageDeleted]", ELogType.Log);
-        }
-
-        private async Task HandleButtonPressed(SocketMessageComponent arg)
-        {
-            _Logger?.Log($"[HandleButtonPressed]", ELogType.Log);
-        }
-
-        private async Task HandleMenuSelection(SocketMessageComponent arg)
-        {
-            _Logger?.Log($"[HandleMenuSelection]", ELogType.Log);
-        }
-
-        private async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> msgCache,
-            Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
-        {
-            _Logger?.Log($"[HandleReactionAdded]", ELogType.Log);
-        }
-
-        private async Task HandleReactionRemoved(Cacheable<IUserMessage, ulong> msgCache, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
-        {
-            _Logger?.Log($"[HandleReactionRemoved]", ELogType.Log);
-        }
-
         private async Task HandleInteraction(SocketInteraction arg)
         {
             _Logger?.Log($"[HandleInteraction]", ELogType.Log);
             var dialogueContext = new InteractionContext(_client, arg);
             await _commands.ExecuteCommandAsync(dialogueContext, _services);
-        }
-
-        private async Task HandleModalSubmitted(SocketModal arg)
-        {
-            _Logger?.Log($"[HandleModalSubmitted]", ELogType.Log);
         }
     }
 }
