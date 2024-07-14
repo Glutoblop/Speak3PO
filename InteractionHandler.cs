@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Speak3Po.Core.Interfaces;
 using Speak3Po.Data;
+using System.IO;
 using System.Reflection;
 
 namespace Speak3Po
@@ -62,7 +63,11 @@ namespace Speak3Po
                         OwnerClientId = user.Id
                     });
 
-                    await tempChannel.AddPermissionOverwriteAsync(user, OverwritePermissions.AllowAll(tempChannel).Modify(manageChannel: PermValue.Allow));
+                    await tempChannel.AddPermissionOverwriteAsync(user, 
+                        OverwritePermissions.AllowAll(tempChannel)
+                            .Modify(manageChannel: PermValue.Allow)
+                            .Modify(stream: PermValue.Allow)
+                        );
                     await newState.VoiceChannel.Guild.MoveAsync((IGuildUser)user, tempChannel);
                 }
             }
