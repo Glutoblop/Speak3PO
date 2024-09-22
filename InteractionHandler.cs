@@ -4,7 +4,6 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Speak3Po.Core.Interfaces;
 using Speak3Po.Data;
-using System.IO;
 using System.Reflection;
 
 namespace Speak3Po
@@ -89,7 +88,6 @@ namespace Speak3Po
 
         private async Task HandleInteraction(SocketInteraction arg)
         {
-            _Logger?.Log($"[HandleInteraction]", ELogType.Log);
             var dialogueContext = new InteractionContext(_client, arg);
             await _commands.ExecuteCommandAsync(dialogueContext, _services);
         }

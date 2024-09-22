@@ -229,3 +229,4 @@ AppPackages/
 /config.json
 /Scripts/config.json
 /Scripts/build
+/speak_config.json
