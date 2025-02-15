@@ -49,11 +49,14 @@ namespace Speak3Po
                     var tempChannel = await newState.VoiceChannel.Guild.CreateVoiceChannelAsync(voiceChannel.TempChannelName,
                         properties =>
                         {
-                            properties.CategoryId = newState.VoiceChannel.CategoryId;
-                            properties.PermissionOverwrites = newState.VoiceChannel?.Category?.PermissionOverwrites.ToList();
+                            if (newState.VoiceChannel.CategoryId != null)
+                            {
+                                properties.CategoryId = newState.VoiceChannel.CategoryId;
+                                properties.PermissionOverwrites = newState.VoiceChannel?.Category?.PermissionOverwrites.ToList();
+                            }
                         });
 
-                    await tempChannel.SyncPermissionsAsync();
+                    //await tempChannel.SyncPermissionsAsync();
 
                     await db.PutAsync($"TempChannel/{tempChannel.Id}", new VoiceChannelData()
                     {
@@ -62,7 +65,7 @@ namespace Speak3Po
                         OwnerClientId = user.Id
                     });
 
-                    await tempChannel.AddPermissionOverwriteAsync(user, 
+                    await tempChannel.AddPermissionOverwriteAsync(user,
                         OverwritePermissions.AllowAll(tempChannel)
                             .Modify(manageChannel: PermValue.Allow)
                             .Modify(stream: PermValue.Allow)
